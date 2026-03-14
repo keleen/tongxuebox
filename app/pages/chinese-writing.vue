@@ -154,7 +154,21 @@ const gridCells = computed(() => {
           <!-- Font Selection -->
           <div class="mb-4">
             <label class="mb-2 block text-xs text-slate-500">字体选择</label>
-            <USelect v-model="fontStyle" :items="fontStyles" class="w-full" />
+            <div class="grid grid-cols-3 gap-2">
+              <button
+                v-for="font in fontStyles"
+                :key="font.value"
+                :class="[
+                  'flex flex-col items-center justify-center gap-1 rounded-lg border-2 py-3 transition-all',
+                  fontStyle === font.value
+                    ? 'border-primary-500 bg-primary-50 text-primary-600'
+                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300',
+                ]"
+                @click="fontStyle = font.value"
+              >
+                <span class="text-xs">{{ font.label }}</span>
+              </button>
+            </div>
           </div>
 
           <!-- Grid Type -->

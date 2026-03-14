@@ -11,6 +11,12 @@ export default defineNuxtConfig({
     fonts: false,
   },
 
+  // 禁用暗夜模式，强制使用浅色主题
+  colorMode: {
+    preference: 'light',
+    fallback: 'light',
+  },
+
   // SPA 模式 - 完全静态
   ssr: false,
 
