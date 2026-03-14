@@ -10,9 +10,9 @@ const mobileMenuOpen = ref(false);
 </script>
 
 <template>
-  <header class="sticky top-0 z-50 px-4 sm:px-10 lg:px-40 py-4">
+  <header class="sticky top-0 z-50 px-4 py-4 lg:px-8">
     <div
-      class="mx-auto flex max-w-[1200px] items-center justify-between rounded-xl border border-primary-500/20 bg-white px-4 sm:px-10 py-3 shadow-sm"
+      class="mx-auto flex max-w-[1400px] items-center justify-between rounded-xl border border-primary-500/20 bg-white px-4 sm:px-10 py-3 shadow-sm"
     >
       <!-- Logo -->
       <NuxtLink to="/" class="flex items-center gap-3 text-primary-500">
@@ -32,9 +32,7 @@ const mobileMenuOpen = ref(false);
             {{ item.label }}
           </NuxtLink>
         </nav>
-        <UButton color="primary" size="md" class="rounded-lg px-6">
-          立即登录
-        </UButton>
+        <UButton color="primary" size="md" class="rounded-lg px-6"> 立即登录 </UButton>
       </div>
 
       <!-- Mobile Menu Button -->
@@ -46,7 +44,7 @@ const mobileMenuOpen = ref(false);
     <!-- Mobile Menu -->
     <div
       v-if="mobileMenuOpen"
-      class="mx-auto mt-2 max-w-[1200px] rounded-xl border border-primary-500/20 bg-white p-4 shadow-lg md:hidden"
+      class="mx-auto mt-2 max-w-[1400px] rounded-xl border border-primary-500/20 bg-white p-4 shadow-lg md:hidden"
     >
       <nav class="flex flex-col gap-2">
         <NuxtLink
@@ -58,9 +56,7 @@ const mobileMenuOpen = ref(false);
         >
           {{ item.label }}
         </NuxtLink>
-        <UButton color="primary" block class="mt-2 rounded-lg">
-          立即登录
-        </UButton>
+        <UButton color="primary" block class="mt-2 rounded-lg"> 立即登录 </UButton>
       </nav>
     </div>
   </header>

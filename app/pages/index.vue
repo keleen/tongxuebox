@@ -125,9 +125,11 @@ const recommendedTools = [
 
 <template>
   <div class="page-bg min-h-screen">
-    <div class="mx-auto max-w-[1200px] px-4 pb-10 sm:px-10 lg:px-0">
+    <div class="mx-auto max-w-[1400px] px-4 pb-10 sm:px-10 lg:px-0">
       <!-- Hero Carousel -->
-      <section class="group relative mb-10 h-[300px] w-full overflow-hidden rounded-2xl shadow-lg md:h-[400px]">
+      <section
+        class="group relative mb-10 h-[300px] w-full overflow-hidden rounded-2xl shadow-lg md:h-[400px]"
+      >
         <!-- Slides -->
         <div
           v-for="(slide, index) in slides"

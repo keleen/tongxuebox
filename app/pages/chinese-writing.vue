@@ -124,7 +124,7 @@ const gridCells = computed(() => {
 
 <template>
   <div class="min-h-screen py-6">
-    <div class="mx-auto flex max-w-[1200px] gap-6 px-4 sm:px-6">
+    <div class="mx-auto flex max-w-[1400px] gap-6 px-4 sm:px-6">
       <!-- Left Panel: Input & Settings -->
       <div class="w-full max-w-[340px] shrink-0 space-y-4">
         <!-- Input Card -->
@@ -231,7 +231,9 @@ const gridCells = computed(() => {
             <UIcon name="i-lucide-eye" class="size-5 text-primary-500" />
             <span class="font-medium text-slate-800">实时预览 (A4 纸张)</span>
           </div>
-          <div class="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-500">
+          <div
+            class="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-500"
+          >
             <UIcon name="i-lucide-zoom-in" class="size-4" />
             缩放: {{ zoomLevel }}%
           </div>
@@ -266,10 +268,7 @@ const gridCells = computed(() => {
                   :class="gridType === 'tian' ? 'tian-zi-ge' : 'mi-zi-ge'"
                 >
                   <!-- Pinyin -->
-                  <span
-                    v-if="showPinyin && cell"
-                    class="absolute top-1 text-xs text-slate-400"
-                  >
+                  <span v-if="showPinyin && cell" class="absolute top-1 text-xs text-slate-400">
                     {{ getPinyin(cell) }}
                   </span>
                   <!-- Character -->
