@@ -6,6 +6,11 @@ export default defineNuxtConfig({
   modules: ['@nuxt/ui'],
   css: ['~/assets/css/main.css'],
 
+  // 禁用 Google Fonts 模块以避免网络访问问题
+  ui: {
+    fonts: false,
+  },
+
   // SPA 模式 - 完全静态
   ssr: false,
 
@@ -22,8 +27,7 @@ export default defineNuxtConfig({
       meta: [
         {
           name: 'description',
-          content:
-            '免费生成可打印的字帖、数学题、简笔画和乐谱，专为小学生设计',
+          content: '免费生成可打印的字帖、数学题、简笔画和乐谱，专为小学生设计',
         },
       ],
     },
