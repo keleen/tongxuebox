@@ -59,7 +59,7 @@ const isEnglishCopybookPage = computed(() => {
             >
               <button
                 :class="[
-                  'flex items-center gap-1 text-sm font-medium transition-colors',
+                  'flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors',
                   isChineseCopybookPage
                     ? 'text-primary-500 border-b-2 border-primary-500 pb-1'
                     : 'text-slate-600 hover:text-primary-500',
@@ -77,7 +77,8 @@ const isEnglishCopybookPage = computed(() => {
               <!-- Dropdown Menu -->
               <div
                 v-if="chineseCopybookMenuOpen"
-                class="absolute right-0 top-full mt-2 w-48 rounded-lg border border-slate-200 bg-white shadow-lg"
+                class="absolute right-0 top-full w-48 rounded-lg border border-slate-200 bg-white shadow-lg"
+                style="margin-top: -2px; padding-top: 2px"
               >
                 <div class="py-2">
                   <NuxtLink
@@ -122,7 +123,7 @@ const isEnglishCopybookPage = computed(() => {
             >
               <button
                 :class="[
-                  'flex items-center gap-1 text-sm font-medium transition-colors',
+                  'flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors',
                   isEnglishCopybookPage
                     ? 'text-primary-500 border-b-2 border-primary-500 pb-1'
                     : 'text-slate-600 hover:text-primary-500',
@@ -140,7 +141,8 @@ const isEnglishCopybookPage = computed(() => {
               <!-- Dropdown Menu -->
               <div
                 v-if="englishCopybookMenuOpen"
-                class="absolute right-0 top-full mt-2 w-48 rounded-lg border border-slate-200 bg-white shadow-lg"
+                class="absolute right-0 top-full w-48 rounded-lg border border-slate-200 bg-white shadow-lg"
+                style="margin-top: -2px; padding-top: 2px"
               >
                 <div class="py-2">
                   <NuxtLink

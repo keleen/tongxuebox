@@ -244,14 +244,14 @@ function handleDownload() {
               class="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary-500 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-primary-600"
               @click="handlePrint"
             >
-              <UIcon name="i-lucide-printer" class="size-4" />
+              <UIcon name="i-lucide-printer" class="size-4 text-slate-700" />
               <span>打印练习纸</span>
             </button>
             <button
               class="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary-500 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-primary-600"
               @click="handleDownload"
             >
-              <UIcon name="i-lucide-download" class="size-4" />
+              <UIcon name="i-lucide-download" class="size-4 text-white" />
               <span>下载PDF</span>
             </button>
           </div>

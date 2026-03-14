@@ -476,7 +476,7 @@ function debounceUpdate() {
           <div
             class="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-500"
           >
-            <UIcon name="i-lucide-zoom-in" class="size-4" />
+            <UIcon name="i-lucide-zoom-in" class="size-4 text-slate-500" />
             缩放: {{ zoomLevel }}%
             <input
               v-model.number="zoomLevel"
@@ -561,7 +561,7 @@ function debounceUpdate() {
           >
             <UIcon
               :name="isExporting ? 'i-lucide-loader-2' : 'i-lucide-download'"
-              class="size-4"
+              class="size-4 text-white"
               :class="{ 'animate-spin': isExporting }"
             />
             {{ isExporting ? '导出中...' : '下载 PDF' }}
@@ -570,14 +570,14 @@ function debounceUpdate() {
             class="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 font-medium text-slate-700 transition-all hover:bg-slate-50"
             @click="handlePrint"
           >
-            <UIcon name="i-lucide-printer" class="size-4" />
+            <UIcon name="i-lucide-printer" class="size-4 text-slate-700" />
             直接打印
           </button>
           <button
             class="flex items-center justify-center rounded-full border border-slate-200 bg-white p-2.5 text-slate-500 transition-all hover:bg-slate-50"
             @click="handleShare"
           >
-            <UIcon name="i-lucide-share-2" class="size-4" />
+            <UIcon name="i-lucide-share-2" class="size-4 text-slate-500" />
           </button>
         </div>
       </div>

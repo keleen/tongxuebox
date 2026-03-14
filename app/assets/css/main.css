@@ -6,12 +6,12 @@
   --font-sans: 'Public Sans', 'Noto Sans SC', system-ui, sans-serif;
   --color-primary-50: oklch(0.97 0.02 270);
   --color-primary-100: oklch(0.94 0.05 270);
-  --color-primary-200: oklch(0.88 0.10 270);
+  --color-primary-200: oklch(0.88 0.1 270);
   --color-primary-300: oklch(0.78 0.15 270);
-  --color-primary-400: oklch(0.65 0.20 270);
+  --color-primary-400: oklch(0.65 0.2 270);
   --color-primary-500: oklch(0.52 0.23 270);
   --color-primary-600: oklch(0.45 0.23 270);
-  --color-primary-700: oklch(0.38 0.20 270);
+  --color-primary-700: oklch(0.38 0.2 270);
   --color-primary-800: oklch(0.32 0.16 270);
   --color-primary-900: oklch(0.26 0.12 270);
   --color-primary-950: oklch(0.18 0.08 270);
@@ -50,8 +50,7 @@
 /* Grid patterns for practice sheets */
 .tian-zi-ge {
   background-image:
-    linear-gradient(#ddd 1px, transparent 1px),
-    linear-gradient(90deg, #ddd 1px, transparent 1px),
+    linear-gradient(#ddd 1px, transparent 1px), linear-gradient(90deg, #ddd 1px, transparent 1px),
     linear-gradient(45deg, #eee 1px, transparent 1px),
     linear-gradient(-45deg, #eee 1px, transparent 1px);
   background-size:
@@ -63,11 +62,9 @@
 
 .mi-zi-ge {
   background-image:
-    linear-gradient(#ddd 1px, transparent 1px),
-    linear-gradient(90deg, #ddd 1px, transparent 1px),
+    linear-gradient(#ddd 1px, transparent 1px), linear-gradient(90deg, #ddd 1px, transparent 1px),
     linear-gradient(45deg, #eee 1px, transparent 1px),
-    linear-gradient(-45deg, #eee 1px, transparent 1px),
-    linear-gradient(#eee 1px, transparent 1px),
+    linear-gradient(-45deg, #eee 1px, transparent 1px), linear-gradient(#eee 1px, transparent 1px),
     linear-gradient(90deg, #eee 1px, transparent 1px);
   background-size:
     40px 40px,
@@ -82,7 +79,7 @@
 .four-line-grid {
   background-image: repeating-linear-gradient(
     to bottom,
-    #4a90e2 0px,
+    #4a90e2 0,
     #4a90e2 1px,
     transparent 1px,
     transparent 8px,
@@ -99,4 +96,102 @@
     transparent 25px,
     transparent 40px
   );
+}
+
+/* Custom styles for switches and sliders to match purple theme */
+/* USwitch component - ensure it uses primary purple color */
+/* @nuxt/ui USwitch should automatically use primary color, but we ensure it */
+[data-headlessui-state='checked'] .bg-primary-500,
+[data-headlessui-state='checked'] .bg-primary-600 {
+  background-color: oklch(0.52 0.23 270) !important;
+}
+
+/* Range input sliders - customize to use purple theme */
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: oklch(0.88 0.1 270);
+  outline: none;
+  transition: background 0.2s ease;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: oklch(0.52 0.23 270);
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  margin-top: -6px;
+}
+
+input[type='range']::-webkit-slider-thumb:hover {
+  background: oklch(0.45 0.23 270);
+  transform: scale(1.1);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(
+    to right,
+    oklch(0.65 0.2 270) 0%,
+    oklch(0.65 0.2 270) var(--slider-progress, 0),
+    oklch(0.88 0.1 270) var(--slider-progress, 0),
+    oklch(0.88 0.1 270) 100%
+  );
+}
+
+/* Firefox */
+input[type='range']::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: oklch(0.52 0.23 270);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+input[type='range']::-moz-range-thumb:hover {
+  background: oklch(0.45 0.23 270);
+  transform: scale(1.1);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+input[type='range']::-moz-range-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: oklch(0.88 0.1 270);
+}
+
+input[type='range']::-moz-range-progress {
+  height: 6px;
+  border-radius: 3px;
+  background: oklch(0.65 0.2 270);
+}
+
+/* For webkit browsers, we need to use a workaround with background gradient */
+/* This will be handled by JavaScript or we can use a pseudo-element approach */
+input[type='range']:focus {
+  outline: none;
+}
+
+input[type='range']:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px oklch(0.97 0.02 270);
+}
+
+input[type='range']:focus::-moz-range-thumb {
+  box-shadow: 0 0 0 3px oklch(0.97 0.02 270);
 }
