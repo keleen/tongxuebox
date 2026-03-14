@@ -3,6 +3,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
+  modules: ['@nuxt/ui'],
+  css: ['~/assets/css/main.css'],
+
   // SPA 模式 - 完全静态
   ssr: false,
 
@@ -10,6 +13,19 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       crawlLinks: true,
+    },
+  },
+
+  app: {
+    head: {
+      title: '童学宝盒 - 让学习变得简单又有趣',
+      meta: [
+        {
+          name: 'description',
+          content:
+            '免费生成可打印的字帖、数学题、简笔画和乐谱，专为小学生设计',
+        },
+      ],
     },
   },
 });

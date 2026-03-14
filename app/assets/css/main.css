@@ -1,0 +1,97 @@
+@import 'tailwindcss';
+@import '@nuxt/ui';
+
+/* Custom theme overrides */
+@theme {
+  --font-sans: 'Inter', 'Noto Sans SC', system-ui, sans-serif;
+  --color-primary-50: oklch(0.97 0.02 230);
+  --color-primary-100: oklch(0.94 0.04 230);
+  --color-primary-200: oklch(0.88 0.08 230);
+  --color-primary-300: oklch(0.78 0.12 230);
+  --color-primary-400: oklch(0.68 0.15 230);
+  --color-primary-500: oklch(0.58 0.17 230);
+  --color-primary-600: oklch(0.50 0.17 230);
+  --color-primary-700: oklch(0.42 0.15 230);
+  --color-primary-800: oklch(0.35 0.12 230);
+  --color-primary-900: oklch(0.28 0.09 230);
+  --color-primary-950: oklch(0.20 0.06 230);
+}
+
+/* Hero gradient background */
+.hero-gradient {
+  background: linear-gradient(135deg, #f0f7ff 0%, #fafbfd 100%);
+}
+
+/* Card hover effect */
+.card-hover {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* A4 Preview styling */
+.a4-preview {
+  width: 210mm;
+  min-height: 297mm;
+  background: white;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Grid patterns for practice sheets */
+.tian-zi-ge {
+  background-image:
+    linear-gradient(#ddd 1px, transparent 1px),
+    linear-gradient(90deg, #ddd 1px, transparent 1px),
+    linear-gradient(45deg, #eee 1px, transparent 1px),
+    linear-gradient(-45deg, #eee 1px, transparent 1px);
+  background-size:
+    40px 40px,
+    40px 40px,
+    40px 40px,
+    40px 40px;
+}
+
+.mi-zi-ge {
+  background-image:
+    linear-gradient(#ddd 1px, transparent 1px),
+    linear-gradient(90deg, #ddd 1px, transparent 1px),
+    linear-gradient(45deg, #eee 1px, transparent 1px),
+    linear-gradient(-45deg, #eee 1px, transparent 1px),
+    linear-gradient(#eee 1px, transparent 1px),
+    linear-gradient(90deg, #eee 1px, transparent 1px);
+  background-size:
+    40px 40px,
+    40px 40px,
+    40px 40px,
+    40px 40px,
+    20px 20px,
+    20px 20px;
+}
+
+/* Four line three grid for English */
+.four-line-grid {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    #4a90e2 0px,
+    #4a90e2 1px,
+    transparent 1px,
+    transparent 8px,
+    #ccc 8px,
+    #ccc 9px,
+    transparent 9px,
+    transparent 16px,
+    #ccc 16px,
+    #ccc 17px,
+    transparent 17px,
+    transparent 24px,
+    #4a90e2 24px,
+    #4a90e2 25px,
+    transparent 25px,
+    transparent 40px
+  );
+}

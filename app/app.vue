@@ -1,7 +1,9 @@
 <template>
-  <div>
-    你好
-    <NuxtRouteAnnouncer />
-    <NuxtWelcome />
-  </div>
+  <UApp>
+    <AppHeader />
+    <UMain>
+      <NuxtPage />
+    </UMain>
+    <AppFooter />
+  </UApp>
 </template>
