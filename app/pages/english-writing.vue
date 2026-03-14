@@ -117,7 +117,9 @@ function handleDownload() {
 
           <!-- A4 Preview Area -->
           <div class="overflow-auto">
-            <div class="mx-auto w-full max-w-[210mm] rounded-lg border border-default bg-white p-8 shadow-lg">
+            <div
+              class="mx-auto w-full max-w-[210mm] rounded-lg border border-default bg-white p-8 shadow-lg"
+            >
               <!-- Title -->
               <div class="mb-6 text-center">
                 <h4 class="text-xl font-bold text-slate-800">English Handwriting Practice</h4>
@@ -126,19 +128,12 @@ function handleDownload() {
 
               <!-- Four Line Grid Preview -->
               <div class="space-y-8">
-                <div
-                  v-for="(line, index) in lines.slice(0, 6)"
-                  :key="index"
-                  class="relative"
-                >
+                <div v-for="(line, index) in lines.slice(0, 6)" :key="index" class="relative">
                   <!-- Four lines background -->
                   <div class="four-line-grid h-10 w-full rounded border border-slate-200" />
 
                   <!-- Text overlay -->
-                  <div
-                    v-if="enableTrace"
-                    class="absolute inset-0 flex items-center px-2"
-                  >
+                  <div v-if="enableTrace" class="absolute inset-0 flex items-center px-2">
                     <span
                       :class="[
                         'text-xl tracking-widest text-slate-300',
@@ -166,12 +161,10 @@ function handleDownload() {
 
           <template #footer>
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <p class="text-sm text-muted">
-                提示：下伸字母（g, y, p）会正确延伸至底线
-              </p>
+              <p class="text-sm text-muted">提示：下伸字母（g, y, p）会正确延伸至底线</p>
               <UButton
                 icon="i-lucide-download"
-                color="success"
+                color="primary"
                 label="下载 PDF"
                 @click="handleDownload"
               />

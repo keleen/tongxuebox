@@ -235,7 +235,7 @@ function handleDownload() {
             <UButton
               icon="i-lucide-download"
               label="下载PDF"
-              variant="outline"
+              color="primary"
               class="rounded-lg"
               @click="handleDownload"
             />
@@ -337,7 +337,9 @@ function handleDownload() {
               </div>
 
               <!-- Footer -->
-              <div class="absolute bottom-6 left-8 right-8 flex items-center justify-between text-xs text-slate-400">
+              <div
+                class="absolute bottom-6 left-8 right-8 flex items-center justify-between text-xs text-slate-400"
+              >
                 <span>由童学趣盒工具生成</span>
                 <span>第 1 页</span>
               </div>

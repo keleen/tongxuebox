@@ -6,7 +6,13 @@ const selectedDifficulties = ref<string[]>(['basic']);
 
 const navItems = [
   { id: 'writing', label: '字帖生成', icon: 'i-lucide-pen-line', to: '/chinese-writing' },
-  { id: 'drawing', label: '简笔画', icon: 'i-lucide-palette', to: '/drawing-library', active: true },
+  {
+    id: 'drawing',
+    label: '简笔画',
+    icon: 'i-lucide-palette',
+    to: '/drawing-library',
+    active: true,
+  },
   { id: 'music', label: '乐谱下载', icon: 'i-lucide-music', to: '/sheet-music' },
   { id: 'math', label: '口算练习', icon: 'i-lucide-calculator', to: '/math-worksheet' },
 ];
@@ -30,14 +36,86 @@ const tabs = [
 ];
 
 const drawings = ref([
-  { id: 1, title: '好奇的小猫', category: 'animal', difficulty: 'beginner', downloads: '12.5k', image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/screen-nyfgYWhqwYzNfoOfWueVW0W9Ejq2RX.png', featured: true },
-  { id: 2, title: '太空火箭', category: 'vehicle', difficulty: 'basic', downloads: '8.2k', image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/screen-nyfgYWhqwYzNfoOfWueVW0W9Ejq2RX.png', featured: true },
-  { id: 3, title: '向日葵', category: 'plant', difficulty: 'beginner', downloads: '5.9k', image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/screen-nyfgYWhqwYzNfoOfWueVW0W9Ejq2RX.png', featured: false },
-  { id: 4, title: '生日蛋糕', category: 'food', difficulty: 'basic', downloads: '21.3k', image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/screen-nyfgYWhqwYzNfoOfWueVW0W9Ejq2RX.png', featured: true },
-  { id: 5, title: '黄色校车', category: 'vehicle', difficulty: 'challenge', downloads: '4.1k', image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/screen-nyfgYWhqwYzNfoOfWueVW0W9Ejq2RX.png', featured: false },
-  { id: 6, title: '智慧猫头鹰', category: 'animal', difficulty: 'basic', downloads: '10.4k', image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/screen-nyfgYWhqwYzNfoOfWueVW0W9Ejq2RX.png', featured: true },
-  { id: 7, title: '奔跑的女孩', category: 'people', difficulty: 'challenge', downloads: '7.6k', image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/screen-nyfgYWhqwYzNfoOfWueVW0W9Ejq2RX.png', featured: false },
-  { id: 8, title: '常青松树', category: 'plant', difficulty: 'beginner', downloads: '3.2k', image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/screen-nyfgYWhqwYzNfoOfWueVW0W9Ejq2RX.png', featured: false },
+  {
+    id: 1,
+    title: '好奇的小猫',
+    category: 'animal',
+    difficulty: 'beginner',
+    downloads: '12.5k',
+    image:
+      'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/screen-nyfgYWhqwYzNfoOfWueVW0W9Ejq2RX.png',
+    featured: true,
+  },
+  {
+    id: 2,
+    title: '太空火箭',
+    category: 'vehicle',
+    difficulty: 'basic',
+    downloads: '8.2k',
+    image:
+      'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/screen-nyfgYWhqwYzNfoOfWueVW0W9Ejq2RX.png',
+    featured: true,
+  },
+  {
+    id: 3,
+    title: '向日葵',
+    category: 'plant',
+    difficulty: 'beginner',
+    downloads: '5.9k',
+    image:
+      'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/screen-nyfgYWhqwYzNfoOfWueVW0W9Ejq2RX.png',
+    featured: false,
+  },
+  {
+    id: 4,
+    title: '生日蛋糕',
+    category: 'food',
+    difficulty: 'basic',
+    downloads: '21.3k',
+    image:
+      'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/screen-nyfgYWhqwYzNfoOfWueVW0W9Ejq2RX.png',
+    featured: true,
+  },
+  {
+    id: 5,
+    title: '黄色校车',
+    category: 'vehicle',
+    difficulty: 'challenge',
+    downloads: '4.1k',
+    image:
+      'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/screen-nyfgYWhqwYzNfoOfWueVW0W9Ejq2RX.png',
+    featured: false,
+  },
+  {
+    id: 6,
+    title: '智慧猫头鹰',
+    category: 'animal',
+    difficulty: 'basic',
+    downloads: '10.4k',
+    image:
+      'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/screen-nyfgYWhqwYzNfoOfWueVW0W9Ejq2RX.png',
+    featured: true,
+  },
+  {
+    id: 7,
+    title: '奔跑的女孩',
+    category: 'people',
+    difficulty: 'challenge',
+    downloads: '7.6k',
+    image:
+      'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/screen-nyfgYWhqwYzNfoOfWueVW0W9Ejq2RX.png',
+    featured: false,
+  },
+  {
+    id: 8,
+    title: '常青松树',
+    category: 'plant',
+    difficulty: 'beginner',
+    downloads: '3.2k',
+    image:
+      'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/screen-nyfgYWhqwYzNfoOfWueVW0W9Ejq2RX.png',
+    featured: false,
+  },
 ]);
 
 const filteredDrawings = computed(() => {
@@ -128,9 +206,7 @@ function loadMore() {
             :to="item.to"
             :class="[
               'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-              item.active
-                ? 'bg-primary-50 text-primary-600'
-                : 'text-slate-600 hover:bg-slate-100',
+              item.active ? 'bg-primary-50 text-primary-600' : 'text-slate-600 hover:bg-slate-100',
             ]"
           >
             <UIcon :name="item.icon" class="size-4" />
@@ -187,9 +263,7 @@ function loadMore() {
       <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 class="text-2xl font-bold text-slate-900">热门素材</h1>
-          <p class="mt-1 text-sm text-slate-500">
-            专为小学生设计的清爽线条画素材，适合涂色与临摹
-          </p>
+          <p class="mt-1 text-sm text-slate-500">专为小学生设计的清爽线条画素材，适合涂色与临摹</p>
         </div>
 
         <!-- Tabs -->
@@ -270,7 +344,7 @@ function loadMore() {
       <!-- Load More Button -->
       <div v-if="filteredDrawings.length > 0" class="mt-8 flex justify-center">
         <button
-          class="rounded-full border border-slate-200 bg-white px-8 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50"
+          class="rounded-full bg-primary-500 px-8 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600"
           @click="loadMore"
         >
           加载更多素材

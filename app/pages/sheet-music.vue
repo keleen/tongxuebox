@@ -236,9 +236,7 @@ function handleDownload(title: string) {
       <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 class="text-2xl font-bold text-slate-900">乐谱天地</h1>
-          <p class="mt-1 text-sm text-slate-500">
-            适合儿童的简单乐谱，支持多种乐器演奏
-          </p>
+          <p class="mt-1 text-sm text-slate-500">适合儿童的简单乐谱，支持多种乐器演奏</p>
         </div>
 
         <!-- Tab Filters -->
@@ -320,7 +318,7 @@ function handleDownload(title: string) {
       <!-- Load More Button -->
       <div v-if="filteredSongs.length > 0" class="mt-8 flex justify-center">
         <button
-          class="rounded-full border border-slate-200 bg-white px-8 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50"
+          class="rounded-full bg-primary-500 px-8 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-600"
         >
           加载更多乐谱
         </button>
