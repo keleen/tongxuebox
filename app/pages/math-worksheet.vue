@@ -193,15 +193,13 @@ function handleDownload() {
           </div>
 
           <!-- Generate Button -->
-          <UButton
-            icon="i-lucide-refresh-cw"
-            label="重新生成题目"
-            color="primary"
-            block
-            size="lg"
-            class="rounded-lg"
+          <button
+            class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary-500 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-primary-600"
             @click="generateQuestions"
-          />
+          >
+            <UIcon name="i-lucide-refresh-cw" class="size-4" />
+            <span>重新生成题目</span>
+          </button>
         </div>
 
         <!-- Tips Card -->
@@ -225,20 +223,20 @@ function handleDownload() {
             <h3 class="text-lg font-semibold text-slate-800">实时预览</h3>
           </div>
           <div class="flex items-center gap-3">
-            <UButton
-              icon="i-lucide-printer"
-              label="打印练习纸"
-              color="primary"
-              class="rounded-lg"
+            <button
+              class="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary-500 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-primary-600"
               @click="handlePrint"
-            />
-            <UButton
-              icon="i-lucide-download"
-              label="下载PDF"
-              color="primary"
-              class="rounded-lg"
+            >
+              <UIcon name="i-lucide-printer" class="size-4" />
+              <span>打印练习纸</span>
+            </button>
+            <button
+              class="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary-500 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-primary-600"
               @click="handleDownload"
-            />
+            >
+              <UIcon name="i-lucide-download" class="size-4" />
+              <span>下载PDF</span>
+            </button>
           </div>
         </div>
 
