@@ -186,9 +186,26 @@ function handleDownload() {
           <!-- Print Options -->
           <div class="mb-6">
             <label class="mb-3 block text-sm text-slate-500">打印选项</label>
-            <label class="flex cursor-pointer items-center gap-3">
-              <UCheckbox v-model="includeAnswers" />
-              <span class="text-sm text-slate-700">包含答案页</span>
+            <label
+              class="group flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 bg-white p-4 transition-all hover:border-primary-300 hover:bg-primary-50/50"
+            >
+              <div class="relative flex items-center">
+                <input
+                  v-model="includeAnswers"
+                  type="checkbox"
+                  class="peer h-5 w-5 cursor-pointer appearance-none rounded border-2 border-slate-300 transition-all checked:border-primary-500 checked:bg-primary-500 hover:border-primary-400"
+                />
+                <UIcon
+                  name="i-lucide-check"
+                  class="pointer-events-none absolute left-1/2 top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 transition-opacity peer-checked:opacity-100"
+                />
+              </div>
+              <div class="flex-1">
+                <span class="text-sm font-medium text-slate-700 group-hover:text-primary-600">
+                  包含答案页
+                </span>
+                <p class="mt-0.5 text-xs text-slate-400">打印时会额外生成一页答案</p>
+              </div>
             </label>
           </div>
 
