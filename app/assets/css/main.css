@@ -1,25 +1,30 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
 
-/* Custom theme overrides */
+/* Custom theme overrides - Purple theme matching design */
 @theme {
-  --font-sans: 'Inter', 'Noto Sans SC', system-ui, sans-serif;
-  --color-primary-50: oklch(0.97 0.02 230);
-  --color-primary-100: oklch(0.94 0.04 230);
-  --color-primary-200: oklch(0.88 0.08 230);
-  --color-primary-300: oklch(0.78 0.12 230);
-  --color-primary-400: oklch(0.68 0.15 230);
-  --color-primary-500: oklch(0.58 0.17 230);
-  --color-primary-600: oklch(0.50 0.17 230);
-  --color-primary-700: oklch(0.42 0.15 230);
-  --color-primary-800: oklch(0.35 0.12 230);
-  --color-primary-900: oklch(0.28 0.09 230);
-  --color-primary-950: oklch(0.20 0.06 230);
+  --font-sans: 'Public Sans', 'Noto Sans SC', system-ui, sans-serif;
+  --color-primary-50: oklch(0.97 0.02 270);
+  --color-primary-100: oklch(0.94 0.05 270);
+  --color-primary-200: oklch(0.88 0.10 270);
+  --color-primary-300: oklch(0.78 0.15 270);
+  --color-primary-400: oklch(0.65 0.20 270);
+  --color-primary-500: oklch(0.52 0.23 270);
+  --color-primary-600: oklch(0.45 0.23 270);
+  --color-primary-700: oklch(0.38 0.20 270);
+  --color-primary-800: oklch(0.32 0.16 270);
+  --color-primary-900: oklch(0.26 0.12 270);
+  --color-primary-950: oklch(0.18 0.08 270);
+}
+
+/* Page background */
+.page-bg {
+  background-color: #f8f6f6;
 }
 
 /* Hero gradient background */
 .hero-gradient {
-  background: linear-gradient(135deg, #f0f7ff 0%, #fafbfd 100%);
+  background: linear-gradient(to right, rgba(70, 58, 232, 0.9), rgba(70, 58, 232, 0.4));
 }
 
 /* Card hover effect */
