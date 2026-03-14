@@ -1,119 +1,109 @@
 <script setup lang="ts">
-const activeTab = ref('grade');
-const selectedGrade = ref(1);
-const operations = ref(['add', 'sub']);
-const minNumber = ref(1);
-const maxNumber = ref(20);
-const questionCount = ref(20);
+const selectedOperation = ref('add');
+const selectedRange = ref(20);
+const selectedCount = ref(50);
 const includeAnswers = ref(true);
-const useVertical = ref(false);
 
 const toast = useToast();
 
-const grades = [
-  { grade: 1, label: '一年级', desc: '20以内加减法' },
-  { grade: 2, label: '二年级', desc: '100以内加减法' },
-  { grade: 3, label: '三年级', desc: '乘法口诀' },
-  { grade: 4, label: '四年级', desc: '多位数运算' },
-  { grade: 5, label: '五年级', desc: '小数运算' },
-  { grade: 6, label: '六年级', desc: '分数运算' },
-];
-
 const operationOptions = [
-  { value: 'add', label: '加法' },
-  { value: 'sub', label: '减法' },
-  { value: 'mul', label: '乘法' },
-  { value: 'div', label: '除法' },
-  { value: 'mix', label: '混合' },
+  { value: 'add', label: '加法', icon: 'i-lucide-plus' },
+  { value: 'sub', label: '减法', icon: 'i-lucide-minus' },
+  { value: 'mul', label: '乘法', icon: 'i-lucide-x' },
+  { value: 'div', label: '除法', icon: 'i-lucide-divide' },
 ];
 
-const questionCountOptions = [
-  { value: 10, label: '10 题' },
-  { value: 20, label: '20 题' },
-  { value: 30, label: '30 题' },
+const rangeOptions = [
+  { value: 10, label: '10以内' },
+  { value: 20, label: '20以内' },
+  { value: 100, label: '100以内' },
 ];
 
-const tabItems = [
-  { label: '按年级选择', value: 'grade' },
-  { label: '自定义出题', value: 'custom' },
+const countOptions = [
+  { value: 20, label: '20题' },
+  { value: 50, label: '50题' },
+  { value: 100, label: '100题' },
 ];
 
-// Generate sample questions based on settings
-const sampleQuestions = computed(() => {
-  const questions: string[] = [];
-  const max = activeTab.value === 'grade' ? getMaxByGrade(selectedGrade.value) : maxNumber.value;
-  const min = activeTab.value === 'grade' ? 1 : minNumber.value;
-  const ops = activeTab.value === 'grade' ? getOpsByGrade(selectedGrade.value) : operations.value;
+// Generate test ID
+const testId = computed(() => {
+  const date = new Date();
+  const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`;
+  return `#TX-${dateStr}`;
+});
 
-  for (let i = 0; i < Math.min(questionCount.value, 20); i++) {
-    const a = Math.floor(Math.random() * (max - min + 1)) + min;
-    const b = Math.floor(Math.random() * (max - min + 1)) + min;
-    const op = ops[Math.floor(Math.random() * ops.length)];
+// Get operation label
+const operationLabel = computed(() => {
+  const op = operationOptions.find((o) => o.value === selectedOperation.value);
+  return op ? op.label : '加法';
+});
 
-    let question = '';
-    let answer = 0;
+// Generate questions based on settings
+const questions = ref<{ num: number; question: string; answer: number }[]>([]);
 
-    switch (op) {
+function generateQuestions() {
+  const newQuestions: { num: number; question: string; answer: number }[] = [];
+  const max = selectedRange.value;
+  const count = Math.min(selectedCount.value, 24); // Show max 24 in preview
+
+  for (let i = 0; i < count; i++) {
+    let a: number, b: number, question: string, answer: number;
+
+    switch (selectedOperation.value) {
       case 'add':
-        question = `${a} + ${b} = `;
+        a = Math.floor(Math.random() * max) + 1;
+        b = Math.floor(Math.random() * (max - a)) + 1;
+        question = `${a} + ${b} =`;
         answer = a + b;
         break;
       case 'sub':
-        question = `${Math.max(a, b)} - ${Math.min(a, b)} = `;
-        answer = Math.max(a, b) - Math.min(a, b);
+        a = Math.floor(Math.random() * max) + 1;
+        b = Math.floor(Math.random() * a) + 1;
+        question = `${a} - ${b} =`;
+        answer = a - b;
         break;
       case 'mul':
-        question = `${Math.min(a, 9)} × ${Math.min(b, 9)} = `;
-        answer = Math.min(a, 9) * Math.min(b, 9);
+        a = Math.floor(Math.random() * 9) + 1;
+        b = Math.floor(Math.random() * 9) + 1;
+        question = `${a} × ${b} =`;
+        answer = a * b;
         break;
       case 'div':
-        const divisor = Math.max(1, Math.min(b, 9));
-        const dividend = divisor * Math.floor(Math.random() * 9 + 1);
-        question = `${dividend} ÷ ${divisor} = `;
-        answer = dividend / divisor;
+        b = Math.floor(Math.random() * 9) + 1;
+        answer = Math.floor(Math.random() * 9) + 1;
+        a = b * answer;
+        question = `${a} ÷ ${b} =`;
         break;
       default:
-        question = `${a} + ${b} = `;
+        a = Math.floor(Math.random() * max) + 1;
+        b = Math.floor(Math.random() * (max - a)) + 1;
+        question = `${a} + ${b} =`;
         answer = a + b;
     }
 
-    questions.push(question + (includeAnswers.value ? `___（${answer}）` : '___'));
+    newQuestions.push({ num: i + 1, question, answer: answer! });
   }
 
-  return questions;
-});
-
-function getMaxByGrade(grade: number): number {
-  switch (grade) {
-    case 1:
-      return 20;
-    case 2:
-      return 100;
-    case 3:
-    case 4:
-      return 99;
-    default:
-      return 100;
-  }
+  questions.value = newQuestions;
 }
 
-function getOpsByGrade(grade: number): string[] {
-  switch (grade) {
-    case 1:
-    case 2:
-      return ['add', 'sub'];
-    case 3:
-      return ['mul'];
-    case 4:
-      return ['add', 'sub', 'mul', 'div'];
-    default:
-      return ['add', 'sub', 'mul', 'div'];
-  }
+// Initial generation
+onMounted(() => {
+  generateQuestions();
+});
+
+// Split questions into 3 columns
+const column1 = computed(() => questions.value.filter((_, i) => i % 3 === 0));
+const column2 = computed(() => questions.value.filter((_, i) => i % 3 === 1));
+const column3 = computed(() => questions.value.filter((_, i) => i % 3 === 2));
+
+function handlePrint() {
+  window.print();
 }
 
 function handleDownload() {
   toast.add({
-    title: `已生成 ${questionCount.value} 道题，PDF 正在下载…`,
+    title: `已生成 ${selectedCount.value} 道${operationLabel.value}题，PDF 正在下载…`,
     icon: 'i-lucide-check-circle',
     color: 'success',
   });
@@ -121,144 +111,240 @@ function handleDownload() {
 </script>
 
 <template>
-  <UContainer class="py-8">
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-default">数学计算题生成器</h1>
-      <p class="mt-2 text-muted">按年级选择或自定义出题，生成可打印的数学练习题</p>
-    </div>
-
-    <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
+  <div class="min-h-screen px-4 py-6 lg:px-8">
+    <div class="mx-auto grid max-w-[1400px] grid-cols-1 gap-6 lg:grid-cols-12">
       <!-- Left Panel: Settings -->
-      <div class="lg:col-span-5">
-        <UCard>
-          <UTabs v-model="activeTab" :items="tabItems" class="mb-6" />
+      <div class="space-y-4 lg:col-span-4">
+        <!-- Parameter Configuration Card -->
+        <div class="rounded-xl bg-white p-6 shadow-sm">
+          <div class="mb-6 flex items-center gap-2">
+            <UIcon name="i-lucide-sliders-horizontal" class="size-5 text-primary-500" />
+            <h3 class="text-lg font-semibold text-slate-800">参数配置</h3>
+          </div>
 
-          <!-- Grade Selection Mode -->
-          <div v-if="activeTab === 'grade'" class="space-y-6">
-            <div>
-              <label class="mb-3 block text-sm font-medium text-default">选择年级</label>
-              <div class="grid grid-cols-2 gap-3">
-                <button
-                  v-for="g in grades"
-                  :key="g.grade"
-                  :class="[
-                    'rounded-lg border p-4 text-left transition-all',
-                    selectedGrade === g.grade
-                      ? 'border-primary-500 bg-primary-50 ring-2 ring-primary-500'
-                      : 'border-default hover:border-primary-300',
-                  ]"
-                  @click="selectedGrade = g.grade"
-                >
-                  <div class="font-semibold text-default">{{ g.label }}</div>
-                  <div class="mt-1 text-xs text-muted">{{ g.desc }}</div>
-                </button>
-              </div>
-            </div>
-
-            <USeparator />
-
-            <div>
-              <label class="mb-3 block text-sm font-medium text-default">题量</label>
-              <URadioGroup v-model="questionCount" :items="questionCountOptions" />
-            </div>
-
-            <USeparator />
-
-            <div class="space-y-3">
-              <UCheckbox v-model="includeAnswers" label="包含答案页" />
-              <UCheckbox v-model="useVertical" label="使用竖式排版（仅加减乘除）" />
+          <!-- Operation Type -->
+          <div class="mb-6">
+            <label class="mb-3 block text-sm text-slate-500">运算类型</label>
+            <div class="grid grid-cols-2 gap-3">
+              <button
+                v-for="op in operationOptions"
+                :key="op.value"
+                :class="[
+                  'flex items-center justify-center gap-2 rounded-lg border py-3 text-sm font-medium transition-all',
+                  selectedOperation === op.value
+                    ? 'border-primary-500 bg-primary-50 text-primary-600'
+                    : 'border-slate-200 bg-white text-slate-600 hover:border-primary-200',
+                ]"
+                @click="selectedOperation = op.value"
+              >
+                <UIcon :name="op.icon" class="size-4" />
+                {{ op.label }}
+              </button>
             </div>
           </div>
 
-          <!-- Custom Mode -->
-          <div v-else class="space-y-6">
-            <div>
-              <label class="mb-3 block text-sm font-medium text-default">运算类型（可多选）</label>
-              <UCheckboxGroup v-model="operations" :items="operationOptions" />
-            </div>
-
-            <USeparator />
-
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="mb-2 block text-sm font-medium text-default">最小值</label>
-                <UInputNumber v-model="minNumber" :min="1" :max="999" />
-              </div>
-              <div>
-                <label class="mb-2 block text-sm font-medium text-default">最大值</label>
-                <UInputNumber v-model="maxNumber" :min="1" :max="999" />
-              </div>
-            </div>
-
-            <USeparator />
-
-            <div>
-              <label class="mb-3 block text-sm font-medium text-default">题量</label>
-              <URadioGroup v-model="questionCount" :items="questionCountOptions" />
-            </div>
-
-            <USeparator />
-
-            <div class="space-y-3">
-              <UCheckbox v-model="includeAnswers" label="包含答案页" />
-              <UCheckbox v-model="useVertical" label="使用竖式排版（仅加减乘除）" />
+          <!-- Number Range -->
+          <div class="mb-6">
+            <label class="mb-3 block text-sm text-slate-500">数值范围</label>
+            <div class="flex gap-2">
+              <button
+                v-for="range in rangeOptions"
+                :key="range.value"
+                :class="[
+                  'flex-1 rounded-lg border py-2.5 text-sm font-medium transition-all',
+                  selectedRange === range.value
+                    ? 'border-primary-500 bg-primary-50 text-primary-600'
+                    : 'border-slate-200 bg-white text-slate-600 hover:border-primary-200',
+                ]"
+                @click="selectedRange = range.value"
+              >
+                {{ range.label }}
+              </button>
             </div>
           </div>
-        </UCard>
+
+          <!-- Question Count -->
+          <div class="mb-6">
+            <label class="mb-3 block text-sm text-slate-500">题目数量</label>
+            <div class="flex gap-2">
+              <button
+                v-for="count in countOptions"
+                :key="count.value"
+                :class="[
+                  'flex-1 rounded-lg border py-2.5 text-sm font-medium transition-all',
+                  selectedCount === count.value
+                    ? 'border-primary-500 bg-primary-50 text-primary-600'
+                    : 'border-slate-200 bg-white text-slate-600 hover:border-primary-200',
+                ]"
+                @click="selectedCount = count.value"
+              >
+                {{ count.label }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Print Options -->
+          <div class="mb-6">
+            <label class="mb-3 block text-sm text-slate-500">打印选项</label>
+            <label class="flex cursor-pointer items-center gap-3">
+              <UCheckbox v-model="includeAnswers" />
+              <span class="text-sm text-slate-700">包含答案页</span>
+            </label>
+          </div>
+
+          <!-- Generate Button -->
+          <UButton
+            icon="i-lucide-refresh-cw"
+            label="重新生成题目"
+            color="primary"
+            block
+            size="lg"
+            class="rounded-lg"
+            @click="generateQuestions"
+          />
+        </div>
+
+        <!-- Tips Card -->
+        <div class="rounded-xl bg-primary-50 p-5">
+          <div class="mb-2 flex items-center gap-2">
+            <UIcon name="i-lucide-lightbulb" class="size-4 text-primary-500" />
+            <span class="font-medium text-primary-600">小贴士</span>
+          </div>
+          <p class="text-sm leading-relaxed text-primary-600/80">
+            一年级学生建议选择"20以内"练习基础进位加法和退位减法。
+          </p>
+        </div>
       </div>
 
       <!-- Right Panel: Preview -->
-      <div class="lg:col-span-7">
-        <UCard>
-          <template #header>
-            <div class="flex items-center justify-between">
-              <h3 class="text-lg font-semibold text-default">预览效果</h3>
-              <UBadge v-if="includeAnswers" color="success" variant="subtle">
-                含答案
-              </UBadge>
-            </div>
-          </template>
+      <div class="lg:col-span-8">
+        <!-- Preview Header -->
+        <div class="mb-4 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <UIcon name="i-lucide-eye" class="size-5 text-primary-500" />
+            <h3 class="text-lg font-semibold text-slate-800">实时预览</h3>
+          </div>
+          <div class="flex items-center gap-3">
+            <UButton
+              icon="i-lucide-printer"
+              label="打印练习纸"
+              color="primary"
+              class="rounded-lg"
+              @click="handlePrint"
+            />
+            <UButton
+              icon="i-lucide-download"
+              label="下载PDF"
+              variant="outline"
+              class="rounded-lg"
+              @click="handleDownload"
+            />
+          </div>
+        </div>
 
-          <!-- A4 Preview Area -->
-          <div class="overflow-auto">
-            <div class="mx-auto w-full max-w-[210mm] rounded-lg border border-default bg-white p-8 shadow-lg">
-              <!-- Title -->
-              <div class="mb-6 text-center">
-                <h4 class="text-xl font-bold text-slate-800">数学口算练习</h4>
-                <p class="mt-1 text-sm text-slate-500">
-                  姓名：_______ 班级：_______ 日期：_______ 用时：_______
-                </p>
+        <!-- A4 Preview Area -->
+        <div class="rounded-xl bg-slate-100 p-6">
+          <div
+            class="relative mx-auto aspect-[210/297] w-full max-w-[600px] overflow-hidden rounded-lg bg-white shadow-lg"
+          >
+            <!-- Paper Content -->
+            <div class="absolute inset-0 p-8">
+              <!-- Header -->
+              <div class="mb-6 flex items-start justify-between">
+                <div>
+                  <h4 class="text-xl font-bold text-slate-800">口算练习测试卷</h4>
+                  <p class="mt-1 text-sm text-primary-500">
+                    主题：{{ selectedRange }}以内{{ operationLabel }}练习
+                  </p>
+                </div>
+                <div class="text-right">
+                  <p class="text-xs text-slate-400">试卷编号</p>
+                  <p class="font-mono text-sm text-slate-600">{{ testId }}</p>
+                </div>
               </div>
 
-              <!-- Questions Grid -->
-              <div class="grid grid-cols-2 gap-x-8 gap-y-4">
-                <div
-                  v-for="(question, index) in sampleQuestions"
-                  :key="index"
-                  class="flex items-center gap-2 border-b border-slate-100 py-2"
-                >
-                  <span class="w-6 text-sm text-slate-400">{{ index + 1 }}.</span>
-                  <span class="font-mono text-lg text-slate-800">{{ question }}</span>
+              <!-- Info Fields -->
+              <div class="mb-6 grid grid-cols-4 gap-4 border-b border-slate-200 pb-4">
+                <div>
+                  <span class="text-xs text-slate-400">姓名</span>
+                  <div class="mt-1 border-b border-dashed border-slate-300" />
                 </div>
+                <div>
+                  <span class="text-xs text-slate-400">日期</span>
+                  <div class="mt-1 border-b border-dashed border-slate-300" />
+                </div>
+                <div>
+                  <span class="text-xs text-slate-400">用时</span>
+                  <div class="mt-1 flex items-center gap-1 text-xs text-slate-400">
+                    <span>____分</span>
+                    <span>____秒</span>
+                  </div>
+                </div>
+                <div>
+                  <span class="text-xs text-slate-400">得分</span>
+                  <div class="mt-1 flex items-center text-xs text-primary-400">
+                    <span class="border-b border-dashed border-slate-300 px-4" />
+                    <span class="text-slate-400">/ {{ selectedCount }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Questions Grid - 3 columns -->
+              <div class="grid grid-cols-3 gap-x-6 gap-y-3">
+                <!-- Column 1 -->
+                <div class="space-y-3">
+                  <div
+                    v-for="q in column1"
+                    :key="q.num"
+                    class="flex items-center gap-2 border-b border-slate-100 pb-2"
+                  >
+                    <span class="w-5 text-xs text-primary-400">{{ q.num }})</span>
+                    <span class="font-mono text-sm text-slate-700">{{ q.question }}</span>
+                    <span class="flex-1 border-b border-slate-200" />
+                  </div>
+                </div>
+                <!-- Column 2 -->
+                <div class="space-y-3">
+                  <div
+                    v-for="q in column2"
+                    :key="q.num"
+                    class="flex items-center gap-2 border-b border-slate-100 pb-2"
+                  >
+                    <span class="w-5 text-xs text-primary-400">{{ q.num }})</span>
+                    <span class="font-mono text-sm text-slate-700">{{ q.question }}</span>
+                    <span class="flex-1 border-b border-slate-200" />
+                  </div>
+                </div>
+                <!-- Column 3 -->
+                <div class="space-y-3">
+                  <div
+                    v-for="q in column3"
+                    :key="q.num"
+                    class="flex items-center gap-2 border-b border-slate-100 pb-2"
+                  >
+                    <span class="w-5 text-xs text-primary-400">{{ q.num }})</span>
+                    <span class="font-mono text-sm text-slate-700">{{ q.question }}</span>
+                    <span class="flex-1 border-b border-slate-200" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Watermark -->
+              <div
+                class="pointer-events-none absolute inset-0 flex items-center justify-center opacity-[0.03]"
+              >
+                <span class="rotate-[-15deg] text-[120px] font-bold text-slate-900">童学趣盒</span>
+              </div>
+
+              <!-- Footer -->
+              <div class="absolute bottom-6 left-8 right-8 flex items-center justify-between text-xs text-slate-400">
+                <span>由童学趣盒工具生成</span>
+                <span>第 1 页</span>
               </div>
             </div>
           </div>
-
-          <template #footer>
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <p class="text-sm text-muted">
-                共 {{ questionCount }} 道题
-              </p>
-              <UButton
-                icon="i-lucide-download"
-                color="success"
-                label="生成并下载 PDF（含答案）"
-                @click="handleDownload"
-              />
-            </div>
-          </template>
-        </UCard>
+        </div>
       </div>
     </div>
-  </UContainer>
+  </div>
 </template>
