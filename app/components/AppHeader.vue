@@ -21,7 +21,7 @@ const mobileMenuOpen = ref(false);
       </NuxtLink>
 
       <!-- Desktop Navigation -->
-      <div class="hidden flex-1 justify-end gap-8 md:flex">
+      <div class="hidden flex-1 justify-end md:flex">
         <nav class="flex items-center gap-6 lg:gap-9">
           <NuxtLink
             v-for="item in navItems"
@@ -32,7 +32,6 @@ const mobileMenuOpen = ref(false);
             {{ item.label }}
           </NuxtLink>
         </nav>
-        <UButton color="primary" size="md" class="rounded-lg px-6"> 立即登录 </UButton>
       </div>
 
       <!-- Mobile Menu Button -->
@@ -56,7 +55,6 @@ const mobileMenuOpen = ref(false);
         >
           {{ item.label }}
         </NuxtLink>
-        <UButton color="primary" block class="mt-2 rounded-lg"> 立即登录 </UButton>
       </nav>
     </div>
   </header>
