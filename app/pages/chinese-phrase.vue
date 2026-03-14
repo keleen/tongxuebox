@@ -1,88 +1,83 @@
 <script setup lang="ts">
+import { getPhrasePinyin } from '~/utils/pinyin';
 import { exportToPDF } from '~/utils/pdfExport';
 
-const text = ref('Apple, banana, cherry\nHello, my name is Lily.');
-const fontStyle = ref('dnealian');
-const caseMode = ref('original');
-const enableTrace = ref(true);
+const text = ref('好好学习 天天向上\n春眠不觉晓 处处闻啼鸟');
+const gridType = ref<'tian' | 'mi'>('tian');
+const fontStyle = ref('kai');
+const showPinyin = ref(true);
 const highlightFirst = ref(false);
 const zoomLevel = ref(75);
 
 // 排版设置
-const lineHeight = ref(10); // mm
-const lineSpacing = ref(2); // mm
+const gridSize = ref(10);
+const lineSpacing = ref(2);
 const insertEmptyRows = ref(0);
-const margin = ref({
-  top: 36,
-  right: 36,
-  bottom: 36,
-  left: 36,
-});
+const insertEmptyCols = ref(0);
+const margin = ref({ top: 36, right: 36, bottom: 36, left: 36 });
 
 // 字体设置
-const fontSize = ref(85); // 百分比
-const verticalOffset = ref(0); // 百分比
+const fontStyles = [
+  { value: 'kai', label: '楷体' },
+  { value: 'song', label: '宋体' },
+  { value: 'hei', label: '黑体' },
+];
+const fontWeight = ref(400);
+const fontSize = ref(68);
+const verticalOffset = ref(0);
 
 // 颜色设置
-const traceColor = ref('#CCCCCC');
-const lineColor = ref('#000000');
+const traceCount = ref(20);
+const traceColor = ref('#FF0000');
+const lineColor = ref('#E5D0D0');
 
-// PDF 导出状态
 const isExporting = ref(false);
 const previewRef = ref<HTMLElement>();
 
-const fontStyles = [
-  { value: 'dnealian', label: "D'Nealian（默认）" },
-  { value: 'zb', label: 'ZB Manuscript' },
-  { value: 'schoolbell', label: 'Schoolbell' },
-];
-
-const caseModes = [
-  { value: 'original', label: '保持原文' },
-  { value: 'lower', label: '全小写' },
-  { value: 'upper', label: '全大写' },
-  { value: 'capitalize', label: '首字母大写' },
-];
-
-const processedText = computed(() => {
-  let result = text.value;
-  switch (caseMode.value) {
-    case 'lower':
-      return result.toLowerCase();
-    case 'upper':
-      return result.toUpperCase();
-    case 'capitalize':
-      return result
-        .split(' ')
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(' ');
-    default:
-      return result;
-  }
+// 处理词组
+const phrases = computed(() => {
+  return text.value
+    .split('\n')
+    .map((line) => line.trim().split(/\s+/).filter(Boolean))
+    .filter((line) => line.length > 0);
 });
 
-const lines = computed(() => {
-  const processed = processedText.value.split('\n').filter((line) => line.trim());
-  // 插入空行
-  if (insertEmptyRows.value > 0 && processed.length > 0) {
-    const result: string[] = [];
-    const interval = Math.floor(processed.length / (insertEmptyRows.value + 1));
-    processed.forEach((line, index) => {
-      result.push(line);
-      if (
-        insertEmptyRows.value > 0 &&
-        index < processed.length - 1 &&
-        (index + 1) % interval === 0
-      ) {
-        result.push('');
-      }
+const gridCells = computed(() => {
+  const cols = 6 + insertEmptyCols.value;
+  const cells: Array<{ phrase: string; pinyin: string; isTrace: boolean; isFirst: boolean }> = [];
+  let phraseIndex = 0;
+
+  phrases.value.forEach((line, lineIndex) => {
+    line.forEach((phrase, phraseInLineIndex) => {
+      const globalIndex = phraseIndex++;
+      const isTrace = globalIndex < traceCount.value;
+      const isFirst = highlightFirst.value && lineIndex === 0 && phraseInLineIndex === 0;
+      cells.push({
+        phrase,
+        pinyin: getPhrasePinyin(phrase),
+        isTrace,
+        isFirst,
+      });
     });
-    return result;
+    // 插入空行
+    if (insertEmptyRows.value > 0 && lineIndex < phrases.value.length - 1) {
+      for (let i = 0; i < cols; i++) {
+        cells.push({ phrase: '', pinyin: '', isTrace: false, isFirst: false });
+      }
+    }
+  });
+
+  // 填充到完整行
+  const remainder = cells.length % cols;
+  if (remainder > 0) {
+    for (let i = 0; i < cols - remainder; i++) {
+      cells.push({ phrase: '', pinyin: '', isTrace: false, isFirst: false });
+    }
   }
-  return processed;
+
+  return cells;
 });
 
-// 计算预览尺寸
 const previewStyle = computed(() => {
   const scale = zoomLevel.value / 100;
   return {
@@ -95,29 +90,30 @@ const previewStyle = computed(() => {
   };
 });
 
-// 四线三格样式
-const fourLineStyle = computed(() => {
-  const lineHeightPx = lineHeight.value * 3.779527559; // mm to px
+const gridStyle = computed(() => {
+  const gridSizePx = gridSize.value * 3.779527559;
   return {
-    height: `${lineHeightPx}px`,
-    marginBottom: `${lineSpacing.value * 3.779527559}px`,
+    gridTemplateColumns: `repeat(${6 + insertEmptyCols.value}, ${gridSizePx}px)`,
+    gap: `${lineSpacing.value * 3.779527559}px`,
   };
 });
 
+const charStyle = computed(() => ({
+  fontSize: `${fontSize.value}%`,
+  fontWeight: fontWeight.value,
+  transform: `translateY(${verticalOffset.value}%)`,
+}));
+
 async function handleDownload() {
-  if (!previewRef.value) {
-    return;
-  }
-
+  if (!previewRef.value) return;
   if (!text.value.trim()) {
-    alert('请先输入要练习的英文');
+    alert('请先输入要练习的词组');
     return;
   }
-
   isExporting.value = true;
   try {
     await exportToPDF(previewRef.value, {
-      filename: '英文手写练习.pdf',
+      filename: '中文词组字帖.pdf',
       format: 'a4',
       orientation: 'portrait',
     });
@@ -133,31 +129,30 @@ async function handleDownload() {
 <template>
   <div class="min-h-screen py-6">
     <div class="mx-auto flex max-w-[1400px] gap-6 px-4 sm:px-6">
-      <!-- Left Panel: Settings -->
+      <!-- Left Panel -->
       <div class="w-full max-w-[380px] shrink-0 space-y-4 overflow-y-auto max-h-[calc(100vh-3rem)]">
-        <!-- Input Card -->
         <div class="rounded-xl bg-white p-5 shadow-sm">
           <div class="mb-3 flex items-center gap-2">
             <UIcon name="i-lucide-type" class="size-5 text-primary-500" />
-            <span class="font-medium text-slate-800">输入待练习英文</span>
+            <span class="font-medium text-slate-800">输入词组</span>
           </div>
           <textarea
             v-model="text"
             class="h-32 w-full resize-none rounded-lg border border-slate-200 p-3 text-sm text-slate-600 placeholder-slate-400 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
-            placeholder="请输入要练习的英文（支持单词和句子）&#10;例如：Apple, banana, cherry&#10;Hello, my name is Lily."
+            placeholder="请输入词组，用空格或换行分隔&#10;例如：好好学习 天天向上"
           />
         </div>
 
-        <!-- Settings Card -->
+        <!-- Settings (复用中文汉字字帖的设置结构) -->
         <div class="rounded-xl bg-white p-5 shadow-sm space-y-5">
           <div class="flex items-center gap-2">
             <UIcon name="i-lucide-sliders-horizontal" class="size-5 text-primary-500" />
             <span class="font-medium text-slate-800">字帖样式设置</span>
           </div>
 
-          <!-- Font Style -->
+          <!-- Font Selection -->
           <div>
-            <label class="mb-2 block text-xs text-slate-500">字体</label>
+            <label class="mb-2 block text-xs text-slate-500">字体选择</label>
             <div class="grid grid-cols-3 gap-2">
               <button
                 v-for="font in fontStyles"
@@ -175,22 +170,31 @@ async function handleDownload() {
             </div>
           </div>
 
-          <!-- Case Mode -->
+          <!-- Grid Type -->
           <div>
-            <label class="mb-2 block text-xs text-slate-500">大小写</label>
-            <div class="grid grid-cols-2 gap-2">
+            <label class="mb-2 block text-xs text-slate-500">格子类型</label>
+            <div class="flex gap-2">
               <button
-                v-for="mode in caseModes"
-                :key="mode.value"
                 :class="[
-                  'flex items-center justify-center rounded-lg border-2 py-2 text-xs transition-all',
-                  caseMode === mode.value
+                  'flex flex-1 flex-col items-center gap-1 rounded-lg border-2 py-3 transition-all',
+                  gridType === 'tian'
                     ? 'border-primary-500 bg-primary-50 text-primary-600'
                     : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300',
                 ]"
-                @click="caseMode = mode.value"
+                @click="gridType = 'tian'"
               >
-                {{ mode.label }}
+                <span class="text-xs">田字格</span>
+              </button>
+              <button
+                :class="[
+                  'flex flex-1 flex-col items-center gap-1 rounded-lg border-2 py-3 transition-all',
+                  gridType === 'mi'
+                    ? 'border-primary-500 bg-primary-50 text-primary-600'
+                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300',
+                ]"
+                @click="gridType = 'mi'"
+              >
+                <span class="text-xs">米字格</span>
               </button>
             </div>
           </div>
@@ -199,15 +203,13 @@ async function handleDownload() {
           <div class="space-y-3">
             <div class="flex items-center justify-between">
               <div>
-                <div class="text-sm text-slate-700">启用描红</div>
-                <div class="text-xs text-slate-400">显示灰色虚线字母</div>
+                <div class="text-sm text-slate-700">显示拼音</div>
               </div>
-              <USwitch v-model="enableTrace" />
+              <USwitch v-model="showPinyin" />
             </div>
             <div class="flex items-center justify-between">
               <div>
                 <div class="text-sm text-slate-700">首字高亮</div>
-                <div class="text-xs text-slate-400">突出显示第一个单词</div>
               </div>
               <USwitch v-model="highlightFirst" />
             </div>
@@ -218,11 +220,11 @@ async function handleDownload() {
             <div class="text-sm font-medium text-slate-700">排版设置</div>
             <div>
               <label class="mb-2 flex items-center justify-between text-xs text-slate-500">
-                <span>行高</span>
-                <span>{{ lineHeight }}mm</span>
+                <span>方格大小</span>
+                <span>{{ gridSize }}mm</span>
               </label>
               <input
-                v-model.number="lineHeight"
+                v-model.number="gridSize"
                 type="range"
                 min="5"
                 max="20"
@@ -258,60 +260,39 @@ async function handleDownload() {
                 class="w-full"
               />
             </div>
-            <div class="space-y-2">
-              <div class="text-xs text-slate-500">页边距</div>
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="mb-1 block text-xs text-slate-400">上: {{ margin.top }}mm</label>
-                  <input
-                    v-model.number="margin.top"
-                    type="range"
-                    min="0"
-                    max="50"
-                    step="1"
-                    class="w-full"
-                  />
-                </div>
-                <div>
-                  <label class="mb-1 block text-xs text-slate-400">下: {{ margin.bottom }}mm</label>
-                  <input
-                    v-model.number="margin.bottom"
-                    type="range"
-                    min="0"
-                    max="50"
-                    step="1"
-                    class="w-full"
-                  />
-                </div>
-                <div>
-                  <label class="mb-1 block text-xs text-slate-400">左: {{ margin.left }}mm</label>
-                  <input
-                    v-model.number="margin.left"
-                    type="range"
-                    min="0"
-                    max="50"
-                    step="1"
-                    class="w-full"
-                  />
-                </div>
-                <div>
-                  <label class="mb-1 block text-xs text-slate-400">右: {{ margin.right }}mm</label>
-                  <input
-                    v-model.number="margin.right"
-                    type="range"
-                    min="0"
-                    max="50"
-                    step="1"
-                    class="w-full"
-                  />
-                </div>
-              </div>
+            <div>
+              <label class="mb-2 flex items-center justify-between text-xs text-slate-500">
+                <span>插入空列</span>
+                <span>{{ insertEmptyCols }}</span>
+              </label>
+              <input
+                v-model.number="insertEmptyCols"
+                type="range"
+                min="0"
+                max="5"
+                step="1"
+                class="w-full"
+              />
             </div>
           </div>
 
           <!-- Font Settings -->
           <div class="space-y-4 border-t border-slate-200 pt-4">
             <div class="text-sm font-medium text-slate-700">字体设置</div>
+            <div>
+              <label class="mb-2 flex items-center justify-between text-xs text-slate-500">
+                <span>字体粗细</span>
+                <span>{{ fontWeight }}</span>
+              </label>
+              <input
+                v-model.number="fontWeight"
+                type="range"
+                min="100"
+                max="900"
+                step="100"
+                class="w-full"
+              />
+            </div>
             <div>
               <label class="mb-2 flex items-center justify-between text-xs text-slate-500">
                 <span>字体大小</span>
@@ -326,25 +307,25 @@ async function handleDownload() {
                 class="w-full"
               />
             </div>
-            <div>
-              <label class="mb-2 flex items-center justify-between text-xs text-slate-500">
-                <span>上下偏移</span>
-                <span>{{ verticalOffset }}%</span>
-              </label>
-              <input
-                v-model.number="verticalOffset"
-                type="range"
-                min="-20"
-                max="20"
-                step="1"
-                class="w-full"
-              />
-            </div>
           </div>
 
           <!-- Color Settings -->
           <div class="space-y-4 border-t border-slate-200 pt-4">
             <div class="text-sm font-medium text-slate-700">颜色设置</div>
+            <div>
+              <label class="mb-2 flex items-center justify-between text-xs text-slate-500">
+                <span>描红数量</span>
+                <span>{{ traceCount }}</span>
+              </label>
+              <input
+                v-model.number="traceCount"
+                type="range"
+                min="0"
+                max="50"
+                step="1"
+                class="w-full"
+              />
+            </div>
             <ColorPicker v-model="traceColor" label="描红颜色" />
             <ColorPicker v-model="lineColor" label="线条颜色" />
           </div>
@@ -353,7 +334,6 @@ async function handleDownload() {
 
       <!-- Right Panel: Preview -->
       <div class="flex-1">
-        <!-- Preview Header -->
         <div class="mb-4 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <UIcon name="i-lucide-eye" class="size-5 text-primary-500" />
@@ -375,82 +355,61 @@ async function handleDownload() {
           </div>
         </div>
 
-        <!-- A4 Paper Preview -->
         <div class="rounded-xl bg-slate-100 p-6">
           <div ref="previewRef" class="mx-auto bg-white shadow-lg" :style="previewStyle">
-            <!-- Title -->
-            <div class="mb-6 text-center">
-              <h4 class="text-xl font-bold text-slate-800">English Handwriting Practice</h4>
-              <p class="mt-1 text-sm text-slate-500">Name: _______ Date: _______</p>
+            <div class="mb-6 flex items-start justify-between">
+              <h3 class="text-xl font-bold text-primary-500">词组练习字帖</h3>
+              <div class="text-right text-sm text-slate-400">
+                <span>姓名：</span>
+                <span class="inline-block w-20 border-b border-dashed border-primary-300" />
+                <span class="ml-4">日期：</span>
+                <span class="inline-block w-20 border-b border-dashed border-primary-300" />
+              </div>
             </div>
 
-            <!-- Four Line Grid Preview -->
-            <div class="space-y-2">
-              <div
-                v-for="(line, index) in lines.slice(0, 20)"
-                :key="index"
-                class="relative"
-                :style="fourLineStyle"
-              >
-                <!-- Four lines background -->
+            <div
+              class="grid border"
+              :class="gridType === 'tian' ? 'tian-zi-ge-grid' : 'mi-zi-ge-grid'"
+              :style="{ ...gridStyle, borderColor: lineColor }"
+            >
+              <template v-for="(cell, index) in gridCells" :key="index">
                 <div
-                  class="four-line-grid w-full rounded border"
+                  class="relative flex aspect-square items-center justify-center border"
+                  :class="gridType === 'tian' ? 'tian-zi-ge' : 'mi-zi-ge'"
                   :style="{
                     borderColor: lineColor,
-                    height: `${lineHeight * 3.779527559}px`,
-                  }"
-                />
-
-                <!-- Text overlay -->
-                <div
-                  v-if="enableTrace && line"
-                  class="absolute inset-0 flex items-center px-2"
-                  :style="{
-                    transform: `translateY(${verticalOffset}%)`,
+                    backgroundColor:
+                      cell.isFirst && highlightFirst ? 'rgba(70, 58, 232, 0.1)' : 'transparent',
                   }"
                 >
                   <span
+                    v-if="showPinyin && cell.phrase"
+                    class="absolute top-1 text-xs"
+                    :style="{ color: lineColor }"
+                  >
+                    {{ cell.pinyin }}
+                  </span>
+                  <span
+                    v-if="cell.phrase"
                     :class="[
-                      'tracking-widest',
-                      fontStyle === 'schoolbell' ? 'font-serif italic' : 'font-sans',
-                      highlightFirst && index === 0 ? 'font-bold text-primary-500' : '',
+                      'text-2xl font-medium',
+                      fontStyle === 'kai' ? 'font-serif' : 'font-sans',
+                      cell.isTrace ? 'trace-character' : '',
                     ]"
                     :style="{
-                      fontSize: `${fontSize}%`,
-                      color: traceColor,
-                      letterSpacing: '0.15em',
+                      ...charStyle,
+                      color: cell.isTrace ? traceColor : '#463AE8',
+                      opacity: cell.isTrace ? 0.5 : 1,
                     }"
                   >
-                    {{ line }}
+                    {{ cell.phrase }}
                   </span>
                 </div>
-
-                <!-- Empty practice line -->
-                <div
-                  v-if="line"
-                  class="four-line-grid mt-2 w-full rounded border"
-                  :style="{
-                    borderColor: lineColor,
-                    height: `${lineHeight * 3.779527559}px`,
-                  }"
-                />
-              </div>
-
-              <!-- Additional empty lines -->
-              <div
-                v-for="i in 4"
-                :key="'empty-' + i"
-                class="four-line-grid w-full rounded border"
-                :style="{
-                  borderColor: lineColor,
-                  height: `${lineHeight * 3.779527559}px`,
-                }"
-              />
+              </template>
             </div>
           </div>
         </div>
 
-        <!-- Action Bar -->
         <div class="mt-4 flex items-center justify-center gap-3">
           <button
             :disabled="isExporting"
@@ -478,33 +437,60 @@ async function handleDownload() {
 </template>
 
 <style scoped>
-.four-line-grid {
-  background-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    transparent 20%,
-    v-bind(lineColor) 20%,
-    v-bind(lineColor) 21%,
-    transparent 21%,
-    transparent 40%,
-    v-bind(lineColor) 40%,
-    v-bind(lineColor) 41%,
-    transparent 41%,
-    transparent 60%,
-    v-bind(lineColor) 60%,
-    v-bind(lineColor) 61%,
-    transparent 61%,
-    transparent 80%,
-    v-bind(lineColor) 80%,
-    v-bind(lineColor) 81%,
-    transparent 81%
-  );
-  background-size: 100% 100%;
+.tian-zi-ge {
+  background:
+    linear-gradient(
+      to right,
+      transparent 49.5%,
+      v-bind(lineColor) 49.5%,
+      v-bind(lineColor) 50.5%,
+      transparent 50.5%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 49.5%,
+      v-bind(lineColor) 49.5%,
+      v-bind(lineColor) 50.5%,
+      transparent 50.5%
+    );
 }
 
-@media print {
-  .page-bg {
-    background: white !important;
-  }
+.mi-zi-ge {
+  background:
+    linear-gradient(
+      to right,
+      transparent 49.5%,
+      v-bind(lineColor) 49.5%,
+      v-bind(lineColor) 50.5%,
+      transparent 50.5%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 49.5%,
+      v-bind(lineColor) 49.5%,
+      v-bind(lineColor) 50.5%,
+      transparent 50.5%
+    ),
+    linear-gradient(
+      45deg,
+      transparent 49%,
+      v-bind(lineColor) 49%,
+      v-bind(lineColor) 51%,
+      transparent 51%
+    ),
+    linear-gradient(
+      -45deg,
+      transparent 49%,
+      v-bind(lineColor) 49%,
+      v-bind(lineColor) 51%,
+      transparent 51%
+    );
+}
+
+.trace-character {
+  opacity: 0.5;
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-decoration-color: v-bind(traceColor);
 }
 </style>

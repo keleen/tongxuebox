@@ -1,74 +1,45 @@
 <script setup lang="ts">
+import { getPinyin } from '~/utils/pinyin';
+import { exportToPDF } from '~/utils/pdfExport';
+
 const text = ref('');
 const gridType = ref<'tian' | 'mi'>('tian');
 const fontStyle = ref('kai');
 const showPinyin = ref(true);
+const showStrokeOrder = ref(false);
+const highlightFirst = ref(false);
 const zoomLevel = ref(75);
 
+// 排版设置
+const gridSize = ref(10); // mm
+const lineSpacing = ref(2); // mm
+const insertEmptyRows = ref(0);
+const insertEmptyCols = ref(0);
+const margin = ref({
+  top: 36,
+  right: 36,
+  bottom: 36,
+  left: 36,
+});
+
+// 字体设置
 const fontStyles = [
   { value: 'kai', label: '楷体 (Kaiti)' },
   { value: 'song', label: '宋体 (Songti)' },
   { value: 'hei', label: '黑体 (Heiti)' },
 ];
+const fontWeight = ref(400);
+const fontSize = ref(68); // 百分比
+const verticalOffset = ref(0); // 百分比
 
-// Simple pinyin mapping for demo purposes
-const pinyinMap: Record<string, string> = {
-  好: 'hǎo',
-  学: 'xué',
-  习: 'xí',
-  天: 'tiān',
-  向: 'xiàng',
-  上: 'shàng',
-  床: 'chuáng',
-  前: 'qián',
-  明: 'míng',
-  月: 'yuè',
-  光: 'guāng',
-  疑: 'yí',
-  是: 'shì',
-  地: 'dì',
-  霜: 'shuāng',
-  举: 'jǔ',
-  头: 'tóu',
-  望: 'wàng',
-  低: 'dī',
-  思: 'sī',
-  故: 'gù',
-  乡: 'xiāng',
-  中: 'zhōng',
-  国: 'guó',
-  人: 'rén',
-  民: 'mín',
-  大: 'dà',
-  小: 'xiǎo',
-  我: 'wǒ',
-  你: 'nǐ',
-  他: 'tā',
-  她: 'tā',
-  的: 'de',
-  了: 'le',
-  在: 'zài',
-  有: 'yǒu',
-  不: 'bù',
-  这: 'zhè',
-  那: 'nà',
-  和: 'hé',
-  就: 'jiù',
-  也: 'yě',
-  都: 'dōu',
-  而: 'ér',
-  说: 'shuō',
-  能: 'néng',
-  会: 'huì',
-  做: 'zuò',
-  看: 'kàn',
-  来: 'lái',
-  去: 'qù',
-  想: 'xiǎng',
-  要: 'yào',
-  知: 'zhī',
-  道: 'dào',
-};
+// 颜色设置
+const traceCount = ref(20);
+const traceColor = ref('#FF0000');
+const lineColor = ref('#E5D0D0');
+
+// PDF 导出状态
+const isExporting = ref(false);
+const previewRef = ref<HTMLElement>();
 
 const charCount = computed(() => {
   return text.value.replace(/[^\u4e00-\u9fa5]/g, '').length;
@@ -78,19 +49,93 @@ const characters = computed(() => {
   return text.value.split('').filter((char) => /[\u4e00-\u9fa5]/.test(char));
 });
 
-function getPinyin(char: string): string {
-  return pinyinMap[char] || 'pīn';
-}
+// 处理插入空行和空列后的网格
+const gridCells = computed(() => {
+  const chars = characters.value;
+  const cols = 6 + insertEmptyCols.value;
+  const rows = Math.ceil(chars.length / cols);
+  const totalRows = rows + insertEmptyRows.value;
+  const totalCells = totalRows * cols;
+  const cells: Array<{ char: string; isTrace: boolean; isFirst: boolean }> = [];
 
-function handleGenerate() {
+  let charIndex = 0;
+  for (let i = 0; i < totalCells; i++) {
+    const row = Math.floor(i / cols);
+    const col = i % cols;
+
+    // 检查是否应该插入空行
+    const shouldInsertEmptyRow =
+      insertEmptyRows.value > 0 && row > 0 && row % (rows / insertEmptyRows.value + 1) === 0;
+
+    if (shouldInsertEmptyRow || charIndex >= chars.length) {
+      cells.push({ char: '', isTrace: false, isFirst: false });
+    } else {
+      const char = chars[charIndex];
+      const isTrace = charIndex < traceCount.value;
+      const isFirst = highlightFirst.value && charIndex === 0;
+      cells.push({ char, isTrace, isFirst });
+      charIndex++;
+    }
+  }
+
+  return cells;
+});
+
+// 计算预览尺寸
+const previewStyle = computed(() => {
+  const scale = zoomLevel.value / 100;
+  const gridSizePx = gridSize.value * 3.779527559; // mm to px (96 DPI)
+  return {
+    width: `${210 * scale}mm`,
+    minHeight: `${297 * scale}mm`,
+    paddingTop: `${margin.value.top * scale}mm`,
+    paddingRight: `${margin.value.right * scale}mm`,
+    paddingBottom: `${margin.value.bottom * scale}mm`,
+    paddingLeft: `${margin.value.left * scale}mm`,
+  };
+});
+
+// 网格样式
+const gridStyle = computed(() => {
+  const gridSizePx = gridSize.value * 3.779527559; // mm to px
+  return {
+    gridTemplateColumns: `repeat(${6 + insertEmptyCols.value}, ${gridSizePx}px)`,
+    gap: `${lineSpacing.value * 3.779527559}px`,
+  };
+});
+
+// 字符样式
+const charStyle = computed(() => {
+  return {
+    fontSize: `${fontSize.value}%`,
+    fontWeight: fontWeight.value,
+    transform: `translateY(${verticalOffset.value}%)`,
+  };
+});
+
+async function handleDownload() {
+  if (!previewRef.value) {
+    return;
+  }
+
   if (charCount.value === 0) {
     alert('请先输入要练习的汉字');
     return;
   }
-}
 
-function handleDownload() {
-  alert('PDF 下载功能将在后续版本中实现。');
+  isExporting.value = true;
+  try {
+    await exportToPDF(previewRef.value, {
+      filename: '中文汉字字帖.pdf',
+      format: 'a4',
+      orientation: 'portrait',
+    });
+  } catch (error) {
+    console.error('PDF export failed:', error);
+    alert('PDF 导出失败，请稍后重试');
+  } finally {
+    isExporting.value = false;
+  }
 }
 
 function handlePrint() {
@@ -110,23 +155,21 @@ function handleShare() {
   }
 }
 
-// Fill empty cells to complete grid rows (6 columns)
-const gridCells = computed(() => {
-  const chars = characters.value.slice(0, 30);
-  const totalCells = Math.max(30, Math.ceil(chars.length / 6) * 6);
-  const cells = [];
-  for (let i = 0; i < totalCells; i++) {
-    cells.push(chars[i] || '');
-  }
-  return cells;
-});
+// 防抖处理
+let debounceTimer: ReturnType<typeof setTimeout>;
+function debounceUpdate() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    // 触发响应式更新
+  }, 300);
+}
 </script>
 
 <template>
   <div class="min-h-screen py-6">
     <div class="mx-auto flex max-w-[1400px] gap-6 px-4 sm:px-6">
       <!-- Left Panel: Input & Settings -->
-      <div class="w-full max-w-[340px] shrink-0 space-y-4">
+      <div class="w-full max-w-[380px] shrink-0 space-y-4 overflow-y-auto max-h-[calc(100vh-3rem)]">
         <!-- Input Card -->
         <div class="rounded-xl bg-white p-5 shadow-sm">
           <div class="mb-3 flex items-center gap-2">
@@ -145,14 +188,14 @@ const gridCells = computed(() => {
         </div>
 
         <!-- Settings Card -->
-        <div class="rounded-xl bg-white p-5 shadow-sm">
-          <div class="mb-4 flex items-center gap-2">
+        <div class="rounded-xl bg-white p-5 shadow-sm space-y-5">
+          <div class="flex items-center gap-2">
             <UIcon name="i-lucide-sliders-horizontal" class="size-5 text-primary-500" />
             <span class="font-medium text-slate-800">字帖样式设置</span>
           </div>
 
           <!-- Font Selection -->
-          <div class="mb-4">
+          <div>
             <label class="mb-2 block text-xs text-slate-500">字体选择</label>
             <div class="grid grid-cols-3 gap-2">
               <button
@@ -172,7 +215,7 @@ const gridCells = computed(() => {
           </div>
 
           <!-- Grid Type -->
-          <div class="mb-4">
+          <div>
             <label class="mb-2 block text-xs text-slate-500">格子类型</label>
             <div class="flex gap-2">
               <button
@@ -217,23 +260,208 @@ const gridCells = computed(() => {
             </div>
           </div>
 
-          <!-- Pinyin Toggle -->
-          <div class="mb-5 flex items-center justify-between">
-            <div>
-              <div class="text-sm text-slate-700">显示拼音</div>
-              <div class="text-xs text-slate-400">在汉字上方自动标注</div>
+          <!-- Display Options -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-sm text-slate-700">显示拼音</div>
+                <div class="text-xs text-slate-400">在汉字上方自动标注</div>
+              </div>
+              <USwitch v-model="showPinyin" />
             </div>
-            <USwitch v-model="showPinyin" />
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-sm text-slate-700">显示笔顺</div>
+                <div class="text-xs text-slate-400">显示汉字书写顺序</div>
+              </div>
+              <USwitch v-model="showStrokeOrder" />
+            </div>
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-sm text-slate-700">首字高亮</div>
+                <div class="text-xs text-slate-400">突出显示第一个字</div>
+              </div>
+              <USwitch v-model="highlightFirst" />
+            </div>
           </div>
 
-          <!-- Generate Button -->
-          <button
-            class="flex w-full items-center justify-center gap-2 rounded-lg bg-primary-500 py-3 font-medium text-white transition-colors hover:bg-primary-600"
-            @click="handleGenerate"
-          >
-            <UIcon name="i-lucide-refresh-cw" class="size-4" />
-            立即生成字帖
-          </button>
+          <!-- Layout Settings -->
+          <div class="space-y-4 border-t border-slate-200 pt-4">
+            <div class="text-sm font-medium text-slate-700">排版设置</div>
+            <div>
+              <label class="mb-2 flex items-center justify-between text-xs text-slate-500">
+                <span>方格大小</span>
+                <span>{{ gridSize }}mm</span>
+              </label>
+              <input
+                v-model.number="gridSize"
+                type="range"
+                min="5"
+                max="20"
+                step="1"
+                class="w-full"
+              />
+            </div>
+            <div>
+              <label class="mb-2 flex items-center justify-between text-xs text-slate-500">
+                <span>行间距</span>
+                <span>{{ lineSpacing }}mm</span>
+              </label>
+              <input
+                v-model.number="lineSpacing"
+                type="range"
+                min="0"
+                max="10"
+                step="1"
+                class="w-full"
+              />
+            </div>
+            <div>
+              <label class="mb-2 flex items-center justify-between text-xs text-slate-500">
+                <span>插入空行</span>
+                <span>{{ insertEmptyRows }}</span>
+              </label>
+              <input
+                v-model.number="insertEmptyRows"
+                type="range"
+                min="0"
+                max="10"
+                step="1"
+                class="w-full"
+              />
+            </div>
+            <div>
+              <label class="mb-2 flex items-center justify-between text-xs text-slate-500">
+                <span>插入空列</span>
+                <span>{{ insertEmptyCols }}</span>
+              </label>
+              <input
+                v-model.number="insertEmptyCols"
+                type="range"
+                min="0"
+                max="5"
+                step="1"
+                class="w-full"
+              />
+            </div>
+            <div class="space-y-2">
+              <div class="text-xs text-slate-500">页边距</div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="mb-1 block text-xs text-slate-400">上: {{ margin.top }}mm</label>
+                  <input
+                    v-model.number="margin.top"
+                    type="range"
+                    min="0"
+                    max="50"
+                    step="1"
+                    class="w-full"
+                  />
+                </div>
+                <div>
+                  <label class="mb-1 block text-xs text-slate-400">下: {{ margin.bottom }}mm</label>
+                  <input
+                    v-model.number="margin.bottom"
+                    type="range"
+                    min="0"
+                    max="50"
+                    step="1"
+                    class="w-full"
+                  />
+                </div>
+                <div>
+                  <label class="mb-1 block text-xs text-slate-400">左: {{ margin.left }}mm</label>
+                  <input
+                    v-model.number="margin.left"
+                    type="range"
+                    min="0"
+                    max="50"
+                    step="1"
+                    class="w-full"
+                  />
+                </div>
+                <div>
+                  <label class="mb-1 block text-xs text-slate-400">右: {{ margin.right }}mm</label>
+                  <input
+                    v-model.number="margin.right"
+                    type="range"
+                    min="0"
+                    max="50"
+                    step="1"
+                    class="w-full"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Font Settings -->
+          <div class="space-y-4 border-t border-slate-200 pt-4">
+            <div class="text-sm font-medium text-slate-700">字体设置</div>
+            <div>
+              <label class="mb-2 flex items-center justify-between text-xs text-slate-500">
+                <span>字体粗细</span>
+                <span>{{ fontWeight }}</span>
+              </label>
+              <input
+                v-model.number="fontWeight"
+                type="range"
+                min="100"
+                max="900"
+                step="100"
+                class="w-full"
+              />
+            </div>
+            <div>
+              <label class="mb-2 flex items-center justify-between text-xs text-slate-500">
+                <span>字体大小</span>
+                <span>{{ fontSize }}%</span>
+              </label>
+              <input
+                v-model.number="fontSize"
+                type="range"
+                min="50"
+                max="150"
+                step="1"
+                class="w-full"
+              />
+            </div>
+            <div>
+              <label class="mb-2 flex items-center justify-between text-xs text-slate-500">
+                <span>上下偏移</span>
+                <span>{{ verticalOffset }}%</span>
+              </label>
+              <input
+                v-model.number="verticalOffset"
+                type="range"
+                min="-20"
+                max="20"
+                step="1"
+                class="w-full"
+              />
+            </div>
+          </div>
+
+          <!-- Color Settings -->
+          <div class="space-y-4 border-t border-slate-200 pt-4">
+            <div class="text-sm font-medium text-slate-700">颜色设置</div>
+            <div>
+              <label class="mb-2 flex items-center justify-between text-xs text-slate-500">
+                <span>描红数量</span>
+                <span>{{ traceCount }}</span>
+              </label>
+              <input
+                v-model.number="traceCount"
+                type="range"
+                min="0"
+                max="50"
+                step="1"
+                class="w-full"
+              />
+            </div>
+            <ColorPicker v-model="traceColor" label="描红颜色" />
+            <ColorPicker v-model="lineColor" label="线条颜色" />
+          </div>
         </div>
       </div>
 
@@ -250,19 +478,20 @@ const gridCells = computed(() => {
           >
             <UIcon name="i-lucide-zoom-in" class="size-4" />
             缩放: {{ zoomLevel }}%
+            <input
+              v-model.number="zoomLevel"
+              type="range"
+              min="50"
+              max="100"
+              step="5"
+              class="ml-2 w-20"
+            />
           </div>
         </div>
 
         <!-- A4 Paper Preview -->
         <div class="rounded-xl bg-slate-100 p-6">
-          <div
-            class="mx-auto bg-white shadow-lg"
-            :style="{
-              width: `${210 * (zoomLevel / 100)}mm`,
-              minHeight: `${297 * (zoomLevel / 100)}mm`,
-              padding: `${20 * (zoomLevel / 100)}mm`,
-            }"
-          >
+          <div ref="previewRef" class="mx-auto bg-white shadow-lg" :style="previewStyle">
             <!-- Paper Header -->
             <div class="mb-6 flex items-start justify-between">
               <h3 class="text-xl font-bold text-primary-500">生字练习字帖</h3>
@@ -275,26 +504,47 @@ const gridCells = computed(() => {
             </div>
 
             <!-- Character Grid -->
-            <div class="grid grid-cols-6 border border-slate-300">
+            <div
+              class="grid border"
+              :class="gridType === 'tian' ? 'tian-zi-ge-grid' : 'mi-zi-ge-grid'"
+              :style="{
+                ...gridStyle,
+                borderColor: lineColor,
+              }"
+            >
               <template v-for="(cell, index) in gridCells" :key="index">
                 <div
-                  class="relative flex aspect-square items-center justify-center border border-slate-300"
+                  class="relative flex aspect-square items-center justify-center border"
                   :class="gridType === 'tian' ? 'tian-zi-ge' : 'mi-zi-ge'"
+                  :style="{
+                    borderColor: lineColor,
+                    backgroundColor:
+                      cell.isFirst && highlightFirst ? 'rgba(70, 58, 232, 0.1)' : 'transparent',
+                  }"
                 >
                   <!-- Pinyin -->
-                  <span v-if="showPinyin && cell" class="absolute top-1 text-xs text-slate-400">
-                    {{ getPinyin(cell) }}
+                  <span
+                    v-if="showPinyin && cell.char"
+                    class="absolute top-1 text-xs"
+                    :style="{ color: lineColor }"
+                  >
+                    {{ getPinyin(cell.char) }}
                   </span>
                   <!-- Character -->
                   <span
-                    v-if="cell"
+                    v-if="cell.char"
                     :class="[
                       'text-2xl font-medium',
                       fontStyle === 'kai' ? 'font-serif' : 'font-sans',
+                      cell.isTrace ? 'trace-character' : '',
                     ]"
-                    :style="{ color: '#463AE8' }"
+                    :style="{
+                      ...charStyle,
+                      color: cell.isTrace ? traceColor : '#463AE8',
+                      opacity: cell.isTrace ? 0.5 : 1,
+                    }"
                   >
-                    {{ cell }}
+                    {{ cell.char }}
                   </span>
                 </div>
               </template>
@@ -305,11 +555,16 @@ const gridCells = computed(() => {
         <!-- Action Bar -->
         <div class="mt-4 flex items-center justify-center gap-3">
           <button
-            class="flex items-center gap-2 rounded-full bg-primary-500 px-6 py-2.5 font-medium text-white shadow-md transition-all hover:bg-primary-600 hover:shadow-lg"
+            :disabled="isExporting"
+            class="flex items-center gap-2 rounded-full bg-primary-500 px-6 py-2.5 font-medium text-white shadow-md transition-all hover:bg-primary-600 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             @click="handleDownload"
           >
-            <UIcon name="i-lucide-download" class="size-4" />
-            下载 PDF
+            <UIcon
+              :name="isExporting ? 'i-lucide-loader-2' : 'i-lucide-download'"
+              class="size-4"
+              :class="{ 'animate-spin': isExporting }"
+            />
+            {{ isExporting ? '导出中...' : '下载 PDF' }}
           </button>
           <button
             class="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 font-medium text-slate-700 transition-all hover:bg-slate-50"
@@ -334,17 +589,65 @@ const gridCells = computed(() => {
 /* Tian Zi Ge (田字格) */
 .tian-zi-ge {
   background:
-    linear-gradient(to right, transparent 49.5%, #e5d0d0 49.5%, #e5d0d0 50.5%, transparent 50.5%),
-    linear-gradient(to bottom, transparent 49.5%, #e5d0d0 49.5%, #e5d0d0 50.5%, transparent 50.5%);
+    linear-gradient(
+      to right,
+      transparent 49.5%,
+      v-bind(lineColor) 49.5%,
+      v-bind(lineColor) 50.5%,
+      transparent 50.5%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 49.5%,
+      v-bind(lineColor) 49.5%,
+      v-bind(lineColor) 50.5%,
+      transparent 50.5%
+    );
 }
 
 /* Mi Zi Ge (米字格) */
 .mi-zi-ge {
   background:
-    linear-gradient(to right, transparent 49.5%, #e5d0d0 49.5%, #e5d0d0 50.5%, transparent 50.5%),
-    linear-gradient(to bottom, transparent 49.5%, #e5d0d0 49.5%, #e5d0d0 50.5%, transparent 50.5%),
-    linear-gradient(45deg, transparent 49%, #e5d0d0 49%, #e5d0d0 51%, transparent 51%),
-    linear-gradient(-45deg, transparent 49%, #e5d0d0 49%, #e5d0d0 51%, transparent 51%);
+    linear-gradient(
+      to right,
+      transparent 49.5%,
+      v-bind(lineColor) 49.5%,
+      v-bind(lineColor) 50.5%,
+      transparent 50.5%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 49.5%,
+      v-bind(lineColor) 49.5%,
+      v-bind(lineColor) 50.5%,
+      transparent 50.5%
+    ),
+    linear-gradient(
+      45deg,
+      transparent 49%,
+      v-bind(lineColor) 49%,
+      v-bind(lineColor) 51%,
+      transparent 51%
+    ),
+    linear-gradient(
+      -45deg,
+      transparent 49%,
+      v-bind(lineColor) 49%,
+      v-bind(lineColor) 51%,
+      transparent 51%
+    );
+}
+
+.tian-zi-ge-grid,
+.mi-zi-ge-grid {
+  border-color: v-bind(lineColor);
+}
+
+.trace-character {
+  opacity: 0.5;
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-decoration-color: v-bind(traceColor);
 }
 
 @media print {
