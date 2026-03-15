@@ -7,14 +7,10 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
 
   // 禁用 Google Fonts 模块以避免网络访问问题
+  // 完全禁用暗黑模式
   ui: {
     fonts: false,
-  },
-
-  // 禁用暗夜模式，强制使用浅色主题
-  colorMode: {
-    preference: 'light',
-    fallback: 'light',
+    colorMode: false, // 完全禁用 @nuxtjs/color-mode 模块
   },
 
   // SPA 模式 - 完全静态
